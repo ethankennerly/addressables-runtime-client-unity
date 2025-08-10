@@ -1,7 +1,7 @@
 # addressables-runtime-client-unity
 
 Loads and instantiates content built with **Unity Addressables** from a remote or local location.  
-This is the runtime side of a two‑repo architecture. For project purpose and collaboration, see the [project board README](https://github.com/users/ethankennerly/projects/1?readme=1).
+This is the runtime side of a two‑repo architecture. For project purpose and collaboration, see the [Project README](./Documentation/README.md).
 
 ## Purpose
 This repository contains a Unity project configured to consume Addressables catalogs and bundles produced by the content pipeline repo. It supports both local file‑based testing and remote hosting.
@@ -29,7 +29,11 @@ This repository contains a Unity project configured to consume Addressables cata
 
 ## Related Repository
 Content pipeline that builds the bundles and catalog:  
-[ethankennerly/addressables-content-pipeline-unity](https://github.com/ethankennerly/addressables-content-pipeline-unity)
+[https://github.com/ethankennerly/addressables-content-pipeline-unity](https://github.com/ethankennerly/addressables-content-pipeline-unity)
+
+## Project Docs
+Project overview and collaboration docs live here:  
+[https://github.com/ethankennerly/addressables-runtime-client-unity/tree/main/Documentation](https://github.com/ethankennerly/addressables-runtime-client-unity/tree/main/Documentation)
 
 ## License
 MIT

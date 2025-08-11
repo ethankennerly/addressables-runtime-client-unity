@@ -44,5 +44,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dc2aeaf499de43d195fb818a7a0978c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BaseUrlOrPath: /Users/ethankennerly/Documents/Unity/ServerData/StandaloneOSX
-  InstantiateFirstFurniture: 1
+  baseUrlOrPath: ../ServerData/StandaloneOSX

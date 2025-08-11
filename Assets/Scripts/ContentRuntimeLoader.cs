@@ -1,18 +1,9 @@
 using System.IO;
-
-
-// If no namespace, add global:: prefix for types
-
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.ResourceLocations;
-using UnityEngine.ResourceManagement.ResourceProviders;
-// DTOs and helpers
-
 
 /// <summary>
 /// Loads content packs and instantiates demo content at runtime.

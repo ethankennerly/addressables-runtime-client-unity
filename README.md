@@ -37,3 +37,5 @@ Project overview and collaboration docs live here:
 
 ## License
 MIT
+
+Except 3D Models from Kenney are CC0.

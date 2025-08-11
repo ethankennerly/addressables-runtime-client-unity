@@ -47,3 +47,5 @@ You’re reading the **project-level** README, stored at:
 
 ## License
 MIT
+
+Except 3D Models from Kenney are CC0.

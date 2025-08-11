@@ -16,11 +16,16 @@ public static class CatalogLoader
         if (!IsHttp(baseUrlOrPath))
         {
             var filePath = Path.Combine(baseUrlOrPath, catFile);
-            if (!File.Exists(filePath)) throw new FileNotFoundException($"Catalog missing: {filePath}");
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"Catalog missing: {filePath}");
+            }
             var catOpFile = Addressables.LoadContentCatalogAsync(filePath);
             await Awaiter(catOpFile);
             if (catOpFile.Status != AsyncOperationStatus.Succeeded || catOpFile.Result == null)
+            {
                 throw new System.Exception($"Catalog load failed: {filePath}");
+            }
             return catOpFile.Result;
         }
 #endif
@@ -28,14 +33,27 @@ public static class CatalogLoader
         var catOp = Addressables.LoadContentCatalogAsync(url);
         await Awaiter(catOp);
         if (catOp.Status != AsyncOperationStatus.Succeeded || catOp.Result == null)
+        {
             throw new System.Exception($"Catalog load failed: {url}");
+        }
         return catOp.Result;
     }
 
     private static async Task Awaiter(AsyncOperationHandle handle)
     {
-        while (!handle.IsDone) await Task.Yield();
+        while (!handle.IsDone)
+        {
+            await Task.Yield();
+        }
     }
-    private static bool IsHttp(string s)  => s.StartsWith("http://", System.StringComparison.OrdinalIgnoreCase) || s.StartsWith("https://", System.StringComparison.OrdinalIgnoreCase);
-    private static string Join(string basePath, string file) => IsHttp(basePath) ? (basePath.EndsWith("/") ? basePath + file : basePath + "/" + file) : Path.Combine(basePath, file);
+
+    private static bool IsHttp(string s)
+    {
+        return s.StartsWith("http://", System.StringComparison.OrdinalIgnoreCase) || s.StartsWith("https://", System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string Join(string basePath, string file)
+    {
+        return IsHttp(basePath) ? (basePath.EndsWith("/") ? basePath + file : basePath + "/" + file) : Path.Combine(basePath, file);
+    }
 }

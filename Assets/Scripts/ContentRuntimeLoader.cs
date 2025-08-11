@@ -41,7 +41,9 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
     private async Task BootstrapAsync()
     {
         if (string.IsNullOrWhiteSpace(baseUrlOrPath))
+        {
             throw new InvalidOperationException("BaseUrlOrPath is empty.");
+        }
 
         // Accept relative paths and resolve to absolute
         string resolvedBasePath = baseUrlOrPath;
@@ -56,10 +58,13 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
         var manifest = await ManifestLoader.LoadManifestJsonAsync(resolvedBasePath);
         var manifestDto = JsonUtility.FromJson<ManifestDto>(manifest);
         if (manifestDto?.packs == null || manifestDto.packs.Length == 0)
+        {
             throw new InvalidOperationException("No packs found in manifest.");
+        }
 
-        // 2. Select eligible packs
-        var eligiblePacks = ContentRuntimeLoader.GetEligiblePacks(manifestDto);
+        // 2. Select eligible packs (no LINQ, no alloc)
+        var eligiblePacks = new List<PackDto>(manifestDto.packs != null ? manifestDto.packs.Length : 0);
+        ContentRuntimeLoader.GetEligiblePacks(manifestDto, eligiblePacks);
 
         // 3. Load catalogs
         foreach (var pack in eligiblePacks)
@@ -72,12 +77,29 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
         await InstantiateDemoContentAsync();
     }
     // Accepts http(s) and file paths
-    private static bool IsHttp(string s) => s.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || s.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
-
-    private static IEnumerable<PackDto> GetEligiblePacks(ManifestDto manifest)
+    private static bool IsHttp(string s)
     {
+        return s.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || s.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+    }
+
+    // Allocation-free eligible pack filter
+    private static void GetEligiblePacks(ManifestDto manifest, List<PackDto> result)
+    {
+        result.Clear();
         var now = DateTime.UtcNow;
-        return manifest.packs.Where(pack => DateTime.TryParse(pack.releaseUtc, out var release) && release <= now);
+        var packs = manifest.packs;
+        if (packs == null)
+        {
+            return;
+        }
+        foreach (var pack in packs)
+        {
+            DateTime release;
+            if (DateTime.TryParse(pack.releaseUtc, out release) && release <= now)
+            {
+                result.Add(pack);
+            }
+        }
     }
 
     private async Task InstantiateDemoContentAsync()
@@ -108,15 +130,24 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
 
     private async Task SpawnFurnitureForSlotsAsync(GameObject room)
     {
-        if (!room) return;
+        if (!room)
+        {
+            return;
+        }
 
         var transforms = room.GetComponentsInChildren<Transform>(true);
         int slots = 0, spawnedCount = 0;
 
         foreach (var t in transforms)
         {
-            if (!t || string.IsNullOrEmpty(t.name)) continue;
-            if (!t.name.StartsWith("slot_", StringComparison.OrdinalIgnoreCase)) continue;
+            if (!t || string.IsNullOrEmpty(t.name))
+            {
+                continue;
+            }
+            if (!t.name.StartsWith("slot_", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
 
             if (TryGetSlotCategory(t.name, out var category))
             {
@@ -162,16 +193,24 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
             // Ensure local transform is clean under the slot
             go.transform.localPosition = Vector3.zero;
             go.transform.localRotation = Quaternion.identity;
-            go.transform.localScale    = Vector3.one;
+            go.transform.localScale = Vector3.one;
             spawned.Add(go);
             onSpawned?.Invoke();
 
             // Quick mesh audit for diagnostics
             int missing = 0;
             var mfs = go.GetComponentsInChildren<MeshFilter>(true);
-            foreach (var mf in mfs) if (mf && mf.sharedMesh == null) missing++;
+            foreach (var mf in mfs)
+            {
+                if (mf && mf.sharedMesh == null)
+                {
+                    missing++;
+                }
+            }
             if (missing > 0)
+            {
                 Debug.LogWarning($"[Runtime] Spawned '{label}' with {missing} MeshFilter(s) missing meshes. primary='{chosen.PrimaryKey}' id='{chosen.InternalId}'");
+            }
         }
         else
         {
@@ -196,17 +235,30 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
 
     private static async Task AwaitHandle(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle handle)
     {
-        while (!handle.IsDone) await Task.Yield();
+        while (!handle.IsDone)
+        {
+            await Task.Yield();
+        }
     }
 
     private void OnDestroy()
     {
         foreach (var go in spawned)
-            if (go) Addressables.ReleaseInstance(go);
+        {
+            if (go)
+            {
+                Addressables.ReleaseInstance(go);
+            }
+        }
         spawned.Clear();
 
         foreach (var locator in locators)
-            if (locator != null) Addressables.RemoveResourceLocator(locator);
+        {
+            if (locator != null)
+            {
+                Addressables.RemoveResourceLocator(locator);
+            }
+        }
         locators.Clear();
     }
 }

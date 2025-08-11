@@ -1,10 +1,11 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
- 
+using Object = UnityEngine.Object;
+
 public static class AddressablesHelper
 {
     public static List<string> GetAddressesByPrefix(string prefix)
@@ -27,8 +28,13 @@ public static class AddressablesHelper
                 set.Add(s);
             }
         }
-        var ordered = set.OrderBy(s => s).ToList();
-        return ordered;
+        var list = new List<string>(set.Count);
+        foreach (var s in set)
+        {
+            list.Add(s);
+        }
+        list.Sort(StringComparer.Ordinal);
+        return list;
     }
 
     public static async Task<GameObject> InstantiateAsync(string address, List<GameObject> spawned)

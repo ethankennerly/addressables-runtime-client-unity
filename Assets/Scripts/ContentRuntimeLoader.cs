@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.AddressableAssets.ResourceLocators;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 /// <summary>
 /// Loads content packs and instantiates demo content at runtime.
@@ -14,7 +16,7 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
     [Tooltip("Base URL or local path for packs.json and catalogs.")]
     [SerializeField] private string baseUrlOrPath = "";
 
-    private readonly List<UnityEngine.AddressableAssets.ResourceLocators.IResourceLocator> locators = new();
+    private readonly List<IResourceLocator> locators = new();
     private readonly List<GameObject> spawned = new();
 
     private async void Start()
@@ -105,7 +107,7 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
         // Instantiate the first room
         var roomHandle = Addressables.LoadAssetAsync<GameObject>(rooms[0]);
         await AwaitHandle(roomHandle);
-        if (!roomHandle.IsValid() || roomHandle.Status != UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded || roomHandle.Result == null)
+        if (!roomHandle.IsValid() || roomHandle.Status != AsyncOperationStatus.Succeeded || roomHandle.Result == null)
         {
             Debug.LogWarning($"[Runtime] Load failed: {rooms[0]}");
             return;
@@ -161,7 +163,7 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
         // Query locations by label (cheap) and choose one
         var locHandle = Addressables.LoadResourceLocationsAsync(label, typeof(GameObject));
         await AwaitHandle(locHandle);
-        if (locHandle.Status != UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded || locHandle.Result == null || locHandle.Result.Count == 0)
+        if (locHandle.Status != AsyncOperationStatus.Succeeded || locHandle.Result == null || locHandle.Result.Count == 0)
         {
             Debug.LogWarning($"[Runtime] No furniture found for label '{label}'. Slot: {slot.name}");
             Addressables.Release(locHandle);
@@ -178,7 +180,7 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
 
         Addressables.Release(locHandle);
 
-        if (instHandle.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded && instHandle.Result != null)
+        if (instHandle.Status == AsyncOperationStatus.Succeeded && instHandle.Result != null)
         {
             var go = instHandle.Result;
             // Ensure local transform is clean under the slot
@@ -224,7 +226,7 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
         return false;
     }
 
-    private static async Task AwaitHandle(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle handle)
+    private static async Task AwaitHandle(AsyncOperationHandle handle)
     {
         while (!handle.IsDone)
         {

@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using UnityEngine;
 
 public static class ManifestLoader
 {
@@ -20,7 +19,7 @@ public static class ManifestLoader
 #endif
         if (!IsHttps(basePath))
         {
-            throw new System.Exception("Mobile requires HTTPS. Update BaseUrlOrPath.");
+            throw new Exception("Mobile requires HTTPS. Update BaseUrlOrPath.");
         }
         var url = Join(basePath, "packs.json");
         using var req = UnityEngine.Networking.UnityWebRequest.Get(url);
@@ -31,19 +30,19 @@ public static class ManifestLoader
         }
         if (req.result != UnityEngine.Networking.UnityWebRequest.Result.Success)
         {
-            throw new System.Exception($"Could not fetch packs.json: {req.error}");
+            throw new Exception($"Could not fetch packs.json: {req.error}");
         }
         return req.downloadHandler.text;
     }
 
     private static bool IsHttp(string s)
     {
-        return s.StartsWith("http://", System.StringComparison.OrdinalIgnoreCase) || s.StartsWith("https://", System.StringComparison.OrdinalIgnoreCase);
+        return s.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || s.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsHttps(string s)
     {
-        return s.StartsWith("https://", System.StringComparison.OrdinalIgnoreCase);
+        return s.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string Join(string basePath, string file)

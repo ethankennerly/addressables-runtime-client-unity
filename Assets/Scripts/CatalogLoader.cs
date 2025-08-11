@@ -1,6 +1,6 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
-using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.AddressableAssets.ResourceLocators;
@@ -9,7 +9,7 @@ public static class CatalogLoader
 {
     public static async Task<IResourceLocator> LoadCatalogAsync(string baseUrlOrPath, string catalogFile)
     {
-        string catFile = catalogFile.EndsWith(".json", System.StringComparison.OrdinalIgnoreCase)
+        string catFile = catalogFile.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
             ? Path.ChangeExtension(catalogFile, ".bin")
             : catalogFile;
 #if UNITY_EDITOR
@@ -24,7 +24,7 @@ public static class CatalogLoader
             await Awaiter(catOpFile);
             if (catOpFile.Status != AsyncOperationStatus.Succeeded || catOpFile.Result == null)
             {
-                throw new System.Exception($"Catalog load failed: {filePath}");
+                throw new Exception($"Catalog load failed: {filePath}");
             }
             return catOpFile.Result;
         }
@@ -34,7 +34,7 @@ public static class CatalogLoader
         await Awaiter(catOp);
         if (catOp.Status != AsyncOperationStatus.Succeeded || catOp.Result == null)
         {
-            throw new System.Exception($"Catalog load failed: {url}");
+            throw new Exception($"Catalog load failed: {url}");
         }
         return catOp.Result;
     }
@@ -49,7 +49,7 @@ public static class CatalogLoader
 
     private static bool IsHttp(string s)
     {
-        return s.StartsWith("http://", System.StringComparison.OrdinalIgnoreCase) || s.StartsWith("https://", System.StringComparison.OrdinalIgnoreCase);
+        return s.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || s.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string Join(string basePath, string file)

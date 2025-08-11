@@ -43,8 +43,10 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
         if (!IsHttp(baseUrlOrPath) && !Path.IsPathRooted(baseUrlOrPath))
         {
             // Application.dataPath points to <project>/Assets, so go up one to project root
-            string projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
-            resolvedBasePath = Path.GetFullPath(Path.Combine(projectRoot, baseUrlOrPath));
+            string projectRoot = Path.GetFullPath(
+                Path.Combine(Application.dataPath, ".."));
+            resolvedBasePath = Path.GetFullPath(
+                Path.Combine(projectRoot, baseUrlOrPath));
         }
 
         // 1. Load manifest
@@ -56,7 +58,8 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
         }
 
         // 2. Select eligible packs (no LINQ, no alloc)
-        var eligiblePacks = new List<PackDto>(manifestDto.packs != null ? manifestDto.packs.Length : 0);
+        var eligiblePacks = new List<PackDto>(
+            manifestDto.packs != null ? manifestDto.packs.Length : 0);
         ContentRuntimeLoader.GetEligiblePacks(manifestDto, eligiblePacks);
 
         // 3. Load catalogs
@@ -107,7 +110,10 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
         // Instantiate the first room
         var roomHandle = Addressables.LoadAssetAsync<GameObject>(rooms[0]);
         await AwaitHandle(roomHandle);
-        if (!roomHandle.IsValid() || roomHandle.Status != AsyncOperationStatus.Succeeded || roomHandle.Result == null)
+        bool failed = !roomHandle.IsValid() ||
+            roomHandle.Status != AsyncOperationStatus.Succeeded ||
+            roomHandle.Result == null;
+        if (failed)
         {
             Debug.LogWarning($"[Runtime] Load failed: {rooms[0]}");
             return;
@@ -163,7 +169,10 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
         // Query locations by label (cheap) and choose one
         var locHandle = Addressables.LoadResourceLocationsAsync(label, typeof(GameObject));
         await AwaitHandle(locHandle);
-        if (locHandle.Status != AsyncOperationStatus.Succeeded || locHandle.Result == null || locHandle.Result.Count == 0)
+        bool noFurniture = locHandle.Status != AsyncOperationStatus.Succeeded ||
+            locHandle.Result == null ||
+            locHandle.Result.Count == 0;
+        if (noFurniture)
         {
             Debug.LogWarning($"[Runtime] No furniture found for label '{label}'. Slot: {slot.name}");
             Addressables.Release(locHandle);
@@ -172,7 +181,8 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
 
         var locations = locHandle.Result;
         var chosen = locations[UnityEngine.Random.Range(0, locations.Count)];
-        Debug.Log($"[Runtime] Spawning furniture for '{label}' → primary='{chosen.PrimaryKey}', id='{chosen.InternalId}' at slot '{slot.name}'");
+        Debug.Log($"[Runtime] Spawning furniture for '{label}' " +
+            $"→ primary='{chosen.PrimaryKey}', id='{chosen.InternalId}' at slot '{slot.name}'");
 
         // Instantiate via Addressables to keep dependency chain intact
         var instHandle = Addressables.InstantiateAsync(chosen, slot, false);
@@ -180,7 +190,9 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
 
         Addressables.Release(locHandle);
 
-        if (instHandle.Status == AsyncOperationStatus.Succeeded && instHandle.Result != null)
+        bool instSuccess = instHandle.Status == AsyncOperationStatus.Succeeded &&
+            instHandle.Result != null;
+        if (instSuccess)
         {
             var go = instHandle.Result;
             // Ensure local transform is clean under the slot
@@ -202,7 +214,8 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
             }
             if (missing > 0)
             {
-                Debug.LogWarning($"[Runtime] Spawned '{label}' with {missing} MeshFilter(s) missing meshes. primary='{chosen.PrimaryKey}' id='{chosen.InternalId}'");
+                Debug.LogWarning($"[Runtime] Spawned '{label}' with {missing} MeshFilter(s) missing meshes. " +
+                    $"primary='{chosen.PrimaryKey}' id='{chosen.InternalId}'");
             }
         }
         else

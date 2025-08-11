@@ -3,7 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-
+using UnityEngine.ResourceManagement.AsyncOperations;
+ 
 public static class AddressablesHelper
 {
     public static List<string> GetAddressesByPrefix(string prefix)
@@ -14,13 +15,20 @@ public static class AddressablesHelper
         {
             foreach (var key in loc.Keys)
             {
-                if (key is string s && s.ToLowerInvariant().StartsWith(prefix))
+                if (key is not string s)
                 {
-                    set.Add(s);
+                    continue;
                 }
+                var lower = s.ToLowerInvariant();
+                if (!lower.StartsWith(prefix))
+                {
+                    continue;
+                }
+                set.Add(s);
             }
         }
-        return set.OrderBy(s => s).ToList();
+        var ordered = set.OrderBy(s => s).ToList();
+        return ordered;
     }
 
     public static async Task<GameObject> InstantiateAsync(string address, List<GameObject> spawned)
@@ -30,7 +38,10 @@ public static class AddressablesHelper
         {
             await Task.Yield();
         }
-        if (!handle.IsValid() || handle.Status != UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded || handle.Result == null)
+        bool failed = !handle.IsValid() ||
+            handle.Status != AsyncOperationStatus.Succeeded ||
+            handle.Result == null;
+        if (failed)
         {
             Debug.LogWarning($"[AddressablesHelper] Load failed: {address}");
             return null;

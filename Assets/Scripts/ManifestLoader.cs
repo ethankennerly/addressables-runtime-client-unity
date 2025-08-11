@@ -6,7 +6,7 @@ public static class ManifestLoader
 {
     public static async Task<string> LoadManifestJsonAsync(string basePath)
     {
-#if UNITY_EDITOR
+        #if UNITY_EDITOR
         if (!IsHttp(basePath))
         {
             var path = Path.Combine(basePath, "packs.json");
@@ -16,7 +16,7 @@ public static class ManifestLoader
             }
             return await Task.Run(() => File.ReadAllText(path));
         }
-#endif
+        #endif
         if (!IsHttps(basePath))
         {
             throw new Exception("Mobile requires HTTPS. Update BaseUrlOrPath.");
@@ -47,6 +47,8 @@ public static class ManifestLoader
 
     private static string Join(string basePath, string file)
     {
-        return IsHttp(basePath) ? (basePath.EndsWith("/") ? basePath + file : basePath + "/" + file) : Path.Combine(basePath, file);
+        return IsHttp(basePath)
+            ? (basePath.EndsWith("/") ? basePath + file : basePath + "/" + file)
+            : Path.Combine(basePath, file);
     }
 }

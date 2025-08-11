@@ -12,6 +12,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 /// </summary>
 public sealed class ContentRuntimeLoader : MonoBehaviour
 {
+    private const string Tag = "[ContentRuntimeLoader]";
     [Header("Content entrypoint")]
     [Tooltip("Base URL or local path for packs.json and catalogs.")]
     [SerializeField] private string baseUrlOrPath = "";
@@ -72,6 +73,7 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
         // 4. Demo: instantiate content
         await InstantiateDemoContentAsync();
     }
+
     // Accepts http(s) and file paths
     private static bool IsHttp(string s)
     {
@@ -115,14 +117,13 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
             roomHandle.Result == null;
         if (failed)
         {
-            Debug.LogWarning($"[Runtime] Load failed: {rooms[0]}");
+            Debug.LogWarning($"{Tag} Room load failed: {rooms[0]}");
             return;
         }
 
         var roomGO = GameObject.Instantiate(roomHandle.Result, Vector3.zero, Quaternion.identity);
         spawned.Add(roomGO);
         Addressables.Release(roomHandle);
-
         // Fill slots with furniture based on category labels
         await SpawnFurnitureForSlotsAsync(roomGO);
     }
@@ -155,11 +156,10 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"[Runtime] Slot name malformed (expected 'slot_<category>[_anything]'): {t.name}");
+                Debug.LogWarning($"{Tag} Slot name malformed (expected 'slot_<category>[_anything]'): {t.name}");
             }
         }
-
-        Debug.Log($"[Runtime] Slot fill complete. slots={slots} spawned={spawnedCount}");
+        Debug.Log($"{Tag} Slot fill complete. slots={slots} spawned={spawnedCount}");
     }
 
     private async Task SpawnOneForSlotAsync(Transform slot, string category, Action onSpawned = null)
@@ -174,14 +174,14 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
             locHandle.Result.Count == 0;
         if (noFurniture)
         {
-            Debug.LogWarning($"[Runtime] No furniture found for label '{label}'. Slot: {slot.name}");
+            Debug.LogWarning($"{Tag} No furniture for label '{label}'. Slot: {slot.name}");
             Addressables.Release(locHandle);
             return;
         }
 
         var locations = locHandle.Result;
         var chosen = locations[UnityEngine.Random.Range(0, locations.Count)];
-        Debug.Log($"[Runtime] Spawning furniture for '{label}' " +
+        Debug.Log($"{Tag} Spawning furniture for '{label}' " +
             $"→ primary='{chosen.PrimaryKey}', id='{chosen.InternalId}' at slot '{slot.name}'");
 
         // Instantiate via Addressables to keep dependency chain intact
@@ -214,13 +214,13 @@ public sealed class ContentRuntimeLoader : MonoBehaviour
             }
             if (missing > 0)
             {
-                Debug.LogWarning($"[Runtime] Spawned '{label}' with {missing} MeshFilter(s) missing meshes. " +
+                Debug.LogWarning($"{Tag} Spawned '{label}' with {missing} MeshFilter(s) missing meshes. " +
                     $"primary='{chosen.PrimaryKey}' id='{chosen.InternalId}'");
             }
         }
         else
         {
-            Debug.LogWarning($"[Runtime] Addressables.InstantiateAsync failed for '{label}' at {chosen.PrimaryKey}");
+            Debug.LogWarning($"{Tag} Addressables.InstantiateAsync failed for '{label}' at {chosen.PrimaryKey}");
         }
         // Note: We keep instHandle implicitly via the instance; releasing happens in OnDestroy via ReleaseInstance.
     }

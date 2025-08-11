@@ -12,7 +12,7 @@ public static class CatalogLoader
         string catFile = catalogFile.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
             ? Path.ChangeExtension(catalogFile, ".bin")
             : catalogFile;
-#if UNITY_EDITOR
+        #if UNITY_EDITOR
         if (!IsHttp(baseUrlOrPath))
         {
             var filePath = Path.Combine(baseUrlOrPath, catFile);
@@ -28,7 +28,7 @@ public static class CatalogLoader
             }
             return catOpFile.Result;
         }
-#endif
+        #endif
         var url = Join(baseUrlOrPath, catFile);
         var catOp = Addressables.LoadContentCatalogAsync(url);
         await Awaiter(catOp);
@@ -49,11 +49,14 @@ public static class CatalogLoader
 
     private static bool IsHttp(string s)
     {
-        return s.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || s.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+        return s.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+               s.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string Join(string basePath, string file)
     {
-        return IsHttp(basePath) ? (basePath.EndsWith("/") ? basePath + file : basePath + "/" + file) : Path.Combine(basePath, file);
+        return IsHttp(basePath)
+            ? (basePath.EndsWith("/") ? basePath + file : basePath + "/" + file)
+            : Path.Combine(basePath, file);
     }
 }
